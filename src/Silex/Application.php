@@ -268,11 +268,16 @@ class Application extends \Pimple implements HttpKernelInterface, EventSubscribe
      * @param string               $prefix The route prefix
      * @param Application|\Closure $app    An Application instance or a Closure that returns an Application instance
      */
-    public function mount($prefix, $app)
+    public function mount($prefix, $app, $services = null)
     {
-        $mountHandler = function (Request $request, $prefix) use ($app) {
+        $mountHandler = function (Request $request, $prefix) use ($app, $services) {
             if (is_callable($app)) {
                 $app = $app();
+                if (!is_null($services) && is_array($services)) {
+                    foreach ($services as $service_name => $service) {
+                        $app[$service_name] = $service;
+                    }
+                }
             }
 
             foreach ($app['controllers']->all() as $controller) {
